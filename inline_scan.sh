@@ -12,6 +12,7 @@ DOCKER_NAME="${RANDOM:-temp}-inline-anchore-engine"
 INLINE_SCAN_IMAGE="${INLINE_SCAN_IMAGE:-}"
 DOCKER_ID=""
 ANALYZE=false
+DIND_RUN="${DIND_RUN:-}"
 VULN_SCAN=false
 CREATE_CMD=()
 RUN_CMD=()
@@ -394,11 +395,16 @@ post_analysis() {
     echo
     docker start -ia "${DOCKER_NAME}"
 
+    # When in docker-in-docker volume mounts simply does not work. This is a workaround
+    if [[ ! -z "${DIND_RUN}" ]]; then
+        docker cp "${DOCKER_NAME}:/anchore-engine/image-analysis-archive.tgz" "${VOLUME_PATH}/image-analysis-archive.tgz"
+    fi
+
     if [[ -f "${VOLUME_PATH}/image-analysis-archive.tgz" ]]; then
         printf '%s\n' " Analysis complete!"
         printf '\n%s\n' "Sending analysis archive to ${SYSDIG_SCANNING_URL%%/}"
     else
-        printf '\n\t%s\n\n' "ERROR - analysis file invalid: /tmp/sysdig/${analysis_archive_name}. An error occured during analysis."  >&2
+        printf '\n\t%s\n\n' "ERROR Cannot find image analysis archive. An error occured during analysis."  >&2
         display_usage_analyzer >&2
         exit 1
     fi
@@ -535,13 +541,10 @@ save_and_copy_images() {
 
     docker save "${SCAN_IMAGES[0]}" -o "${save_file_path}"
 
-    echo "docker save is in progress..."
-    while [[ ! -s "${save_file_path}" ]]; do
-        if [[ "${V_flag:-}" ]]; then
-            echo "waiting for docker save to finish"
-        fi
-        sleep 1
-    done
+    # When in docker-in-docker volume mounts simply does not work. This is a workaround
+    if [[ ! -z "${DIND_RUN}" ]]; then
+        docker cp "${VOLUME_PATH}/." "${DOCKER_NAME}:/anchore-engine/"
+    fi
 
     if [[ -f "${save_file_path}" ]]; then
         chmod +r "${save_file_path}"
