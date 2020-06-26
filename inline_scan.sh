@@ -12,7 +12,6 @@ DOCKER_NAME="${RANDOM:-temp}-inline-anchore-engine"
 INLINE_SCAN_IMAGE="${INLINE_SCAN_IMAGE:-}"
 DOCKER_ID=""
 ANALYZE=false
-DIND_RUN="${DIND_RUN:-}"
 VULN_SCAN=false
 CREATE_CMD=()
 RUN_CMD=()
@@ -25,7 +24,7 @@ VALIDATED_OPTIONS=""
 DOCKERFILE="./Dockerfile"
 POLICY_BUNDLE="./policy_bundle.json"
 TIMEOUT=300
-VOLUME_PATH="/tmp/sysdig"
+TMP_PATH="/tmp/sysdig"
 # Analyzer option variable defaults
 SYSDIG_BASE_SCANNING_URL="https://secure.sysdig.com"
 SYSDIG_SCANNING_URL="http://localhost:9040/api/scanning"
@@ -89,7 +88,7 @@ Sysdig Inline Analyzer --
       -C         [optional] Delete the image from Sysdig Secure if the scan fails
       -P         [optional] Pull container image from registry
       -V         [optional] Increase verbosity
-      -v <PATH>  [optional] Use this absolute PATH for intermediate tar files. Path will be created if not existing. Default is /tmp/sysdig (ex: -v $PWD/temp)
+      -v <PATH>  [optional] Use this absolute PATH for intermediate needed files. Path will be created if not existing. Default is /tmp/sysdig (ex: -v $PWD/temp)
       -R <PATH>  [optional] Download scan result pdf in a specified local directory (ex: -R /staging/reports)
       -o         [optional] Use this flag if targeting onprem sysdig installation
 
@@ -136,7 +135,7 @@ get_and_validate_analyzer_options() {
             C  ) clean_flag=true;;
             V  ) V_flag=true;;
             R  ) R_flag=true; PDF_DIRECTORY="${OPTARG}";;
-            v  ) v_flag=true; VOLUME_PATH="${OPTARG}";;
+            v  ) v_flag=true; TMP_PATH="${OPTARG}";;
             h  ) display_usage_analyzer; exit;;
             \? ) printf "\n\t%s\n\n" "Invalid option: -${OPTARG}" >&2; display_usage_analyzer >&2; exit 1;;
             :  ) printf "\n\t%s\n\n%s\n\n" "Option -${OPTARG} requires an argument." >&2; display_usage_analyzer >&2; exit 1;;
@@ -209,13 +208,13 @@ get_and_validate_analyzer_options() {
         set -x
     fi
 
-    if [[ ! $VOLUME_PATH == /* ]]; then
-        printf '\n\t%s\n\n' "ERROR - Use absolute path with -v flag. Actual value is '${VOLUME_PATH}'" >&2
+    if [[ ! $TMP_PATH == /* ]]; then
+        printf '\n\t%s\n\n' "ERROR - Use absolute path with -v flag. Actual value is '${TMP_PATH}'" >&2
         display_usage_analyzer >&2
         exit 1
     else
-        VOLUME_PATH="${VOLUME_PATH}/sysdig-inline-scan-$(date +%s)"
-        mkdir -p ${VOLUME_PATH}
+        TMP_PATH="${TMP_PATH}/sysdig-inline-scan-$(date +%s)"
+        mkdir -p ${TMP_PATH}
     fi
 
     VALIDATED_OPTIONS="$@"
@@ -293,8 +292,6 @@ prepare_inline_container() {
         CREATE_CMD+=('-e VERBOSE=true')
         RUN_CMD+=('-e VERBOSE=true')
     fi
-    printf '\n%s\n' "Creating volume mount -- ${VOLUME_PATH}:/anchore-engine"
-    CREATE_CMD+=('-v "${VOLUME_PATH}:/anchore-engine:rw"')
 
     CREATE_CMD+=('"${INLINE_SCAN_IMAGE}"')
     RUN_CMD+=('"${INLINE_SCAN_IMAGE}"')
@@ -395,12 +392,9 @@ post_analysis() {
     echo
     docker start -ia "${DOCKER_NAME}"
 
-    # When in docker-in-docker volume mounts simply does not work. This is a workaround
-    if [[ ! -z "${DIND_RUN}" ]]; then
-        docker cp "${DOCKER_NAME}:/anchore-engine/image-analysis-archive.tgz" "${VOLUME_PATH}/image-analysis-archive.tgz"
-    fi
+    docker cp "${DOCKER_NAME}:/anchore-engine/image-analysis-archive.tgz" "${TMP_PATH}/image-analysis-archive.tgz"
 
-    if [[ -f "${VOLUME_PATH}/image-analysis-archive.tgz" ]]; then
+    if [[ -f "${TMP_PATH}/image-analysis-archive.tgz" ]]; then
         printf '%s\n' " Analysis complete!"
         printf '\n%s\n' "Sending analysis archive to ${SYSDIG_SCANNING_URL%%/}"
     else
@@ -410,7 +404,7 @@ post_analysis() {
     fi
 
     # Posting the archive to the secure backend
-    HCODE=$(curl -sSk --output /tmp/sysdig/sysdig_output.log --write-out "%{http_code}" -H "Content-Type: multipart/form-data" -H "Authorization: Bearer ${SYSDIG_API_TOKEN}" -H "imageId: ${SYSDIG_IMAGE_ID}" -H "digestId: ${SYSDIG_IMAGE_DIGEST}" -H "imageName: ${FULLTAG}" -F "archive_file=@${VOLUME_PATH}/image-analysis-archive.tgz" "${SYSDIG_SCANNING_URL}/import/images")
+    HCODE=$(curl -sSk --output /tmp/sysdig/sysdig_output.log --write-out "%{http_code}" -H "Content-Type: multipart/form-data" -H "Authorization: Bearer ${SYSDIG_API_TOKEN}" -H "imageId: ${SYSDIG_IMAGE_ID}" -H "digestId: ${SYSDIG_IMAGE_DIGEST}" -H "imageName: ${FULLTAG}" -F "archive_file=@${TMP_PATH}/image-analysis-archive.tgz" "${SYSDIG_SCANNING_URL}/import/images")
 
 	if [[ "${HCODE}" != 200 ]]; then
 	    printf '\n\t%s\n\n' "ERROR - unable to POST ${analysis_archive_name} to ${SYSDIG_SCANNING_URL%%/}/import/images" >&2
@@ -537,14 +531,11 @@ save_and_copy_images() {
     local base_image_name=$(echo ${FULLTAG} | rev | cut -d '/' -f 1 | rev )
     echo "Saving ${base_image_name} for local analysis"
     save_file_name="${base_image_name}.tar"
-    local save_file_path="${VOLUME_PATH}/${save_file_name}"
+    local save_file_path="${TMP_PATH}/${save_file_name}"
 
     docker save "${SCAN_IMAGES[0]}" -o "${save_file_path}"
 
-    # When in docker-in-docker volume mounts simply does not work. This is a workaround
-    if [[ ! -z "${DIND_RUN}" ]]; then
-        docker cp "${VOLUME_PATH}/." "${DOCKER_NAME}:/anchore-engine/"
-    fi
+    docker cp "${TMP_PATH}/." "${DOCKER_NAME}:/anchore-engine/"
 
     if [[ -f "${save_file_path}" ]]; then
         chmod +r "${save_file_path}"
@@ -587,8 +578,8 @@ cleanup() {
         unset DOCKER_ID
     done
 
-    echo "Removing temporary folder created ${VOLUME_PATH}"
-    rm -rf "${VOLUME_PATH}"
+    echo "Removing temporary folder created ${TMP_PATH}"
+    rm -rf "${TMP_PATH}"
 
     exit "${ret}"
 }
