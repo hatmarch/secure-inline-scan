@@ -12,7 +12,7 @@ RUN touch /etc/subgid /etc/subuid \
 # Use chroot since the default runc does not work when running rootless
 RUN echo "export BUILDAH_ISOLATION=chroot" >> /home/sysdig/.bashrc
 
-# Use VFS since fuse does not work
+# Use overlay graph driver
 RUN mkdir -p /home/sysdig/.config/containers \
  && echo "driver=\"overlay\"" > /home/sysdig/.config/containers/storage.conf
 
