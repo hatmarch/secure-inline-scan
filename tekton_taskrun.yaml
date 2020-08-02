@@ -8,7 +8,7 @@ spec:
   taskSpec:
     steps:
       - name: sysdig-inline-scan
-        image: sysdigdan/secure-inline-scan:dev
+        image: sysdigdan/secure-inline-scan:latest
         securityContext:
            allowPrivilegeEscalation: true
            privileged: true
