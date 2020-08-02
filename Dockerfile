@@ -14,7 +14,7 @@ RUN echo "export BUILDAH_ISOLATION=chroot" >> /home/sysdig/.bashrc
 
 # Use VFS since fuse does not work
 RUN mkdir -p /home/sysdig/.config/containers \
- && echo "driver=\"vfs\"" > /home/sysdig/.config/containers/storage.conf
+ && echo "driver=\"overlay\"" > /home/sysdig/.config/containers/storage.conf
 
 RUN dnf install which curl bash nano wget podman -y \
  && dnf -y update \
