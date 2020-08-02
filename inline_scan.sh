@@ -109,14 +109,6 @@ main() {
 
 get_and_validate_analyzer_options() {
   #Parse options
-  if [[ -z ${SYSDIG_SECURE_TOKEN} ]]; then
-    SYSDIG_API_TOKEN=${SYSDIG_SECURE_TOKEN}
-  fi
-  
-  if [[ -z ${IMAGE_TO_SCAN} ]]; then
-    IMAGE_TO_SCAN=${IMAGE_TO_SCAN}
-  fi
-  
   while getopts ':k:s:a:d:f:i:m:R:v:CPVho' option; do
       case "${option}" in
           k  ) k_flag=true; SYSDIG_API_TOKEN="${OPTARG}";;
@@ -139,6 +131,14 @@ get_and_validate_analyzer_options() {
   done
   shift "$((OPTIND - 1))"
 
+  if [[ -z ${SYSDIG_SECURE_TOKEN} ]]; then
+    SYSDIG_API_TOKEN=${SYSDIG_SECURE_TOKEN}
+  fi
+  
+  if [[ -z ${IMAGE_TO_SCAN} ]]; then
+    IMAGE_TO_SCAN=${IMAGE_TO_SCAN}
+  fi
+  
   SYSDIG_SCANNING_URL="${SYSDIG_BASE_SCANNING_URL}"/api/scanning/v1
   SYSDIG_ANCHORE_URL="${SYSDIG_SCANNING_URL}"/anchore
   # Check for invalid options
