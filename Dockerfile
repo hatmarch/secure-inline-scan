@@ -10,11 +10,11 @@ RUN touch /etc/subgid /etc/subuid \
  && echo sysdig:10000:65536 > /etc/subgid
 
 # Use chroot since the default runc does not work when running rootless
-RUN echo "export BUILDAH_ISOLATION=chroot" >> /home/sysdig/.bashrc
+# RUN echo "export BUILDAH_ISOLATION=chroot" >> /home/sysdig/.bashrc
 
 # Use overlay graph driver
-RUN mkdir -p /home/sysdig/.config/containers \
- && echo "driver=\"overlay\"" > /home/sysdig/.config/containers/storage.conf
+# RUN mkdir -p /home/sysdig/.config/containers \
+#  && echo "driver=\"overlay\"" > /home/sysdig/.config/containers/storage.conf
 
 RUN dnf install which curl bash nano wget podman -y \
  && dnf -y update \
