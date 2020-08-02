@@ -1,0 +1,24 @@
+apiVersion: tekton.dev/v1alpha1
+kind: TaskRun
+metadata:
+  generateName: sysdig-inline-scan-
+  namespace: sysdig-inline-scan
+spec:
+  serviceAccountName: sysdig-account
+  taskSpec:
+    steps:
+      - name: sysdig-inline-scan
+        image: sysdigdan/secure-inline-scan:latest
+        securityContext:
+           allowPrivilegeEscalation: true
+           privileged: true
+           # the default underprivileged user to be used
+           runAsUser: 0
+        args:
+          - analyze
+          - '-P'
+        env:
+        - name: SYSDIG_SECURE_TOKEN
+          value: 85e2a86e-9c13-40a3-bbe5-d161aa237a7f
+        - name: IMAGE_TO_SCAN
+          value: busybox:latest
