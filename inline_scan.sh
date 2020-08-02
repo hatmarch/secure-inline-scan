@@ -139,6 +139,11 @@ get_and_validate_analyzer_options() {
   done
   shift "$((OPTIND - 1))"
   
+  echo
+  echo "DEBUG - SYSDIG_API_TOKEN=${SYSDIG_API_TOKEN}"
+  echo
+
+
   SYSDIG_SCANNING_URL="${SYSDIG_BASE_SCANNING_URL}"/api/scanning/v1
   SYSDIG_ANCHORE_URL="${SYSDIG_SCANNING_URL}"/anchore
   # Check for invalid options
