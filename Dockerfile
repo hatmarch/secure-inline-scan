@@ -21,4 +21,4 @@ RUN chmod +x /home/sysdig/*
 USER sysdig:sysdig
 WORKDIR /home/sysdig
 
-ENTRYPOINT ["bash"]
+ENTRYPOINT ["/home/sysdig/inline_scan.sh"]
