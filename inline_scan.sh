@@ -589,9 +589,6 @@ cleanup() {
   fi
   
   for id in ${DOCKER_ID}; do
-      echo
-      echo "DEBUG - id=${id}"
-      echo
       local -i timeout=0
       while (podman ps -a | grep "${id:0:10}") > /dev/null && [[ "${timeout}" -lt 12 ]]; do
           podman kill "${id}" &> /dev/null
