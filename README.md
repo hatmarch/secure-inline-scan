@@ -1,5 +1,5 @@
 # secure-inline-scan - using podman
-This is a fork of the sysdiglabs/secure-inline-scan repository which has been adapted for OpenShift and Tekton.
+This is a fork of the sysdiglabs/secure-inline-scan repository which has been adapted to use podman instead of docker for the use with OpenShift and Tekton.
 
 This script is useful for performing local analysis on container images (both from registries and locally built) and post the result of the analysis to [Sysdig Secure](https://sysdig.com/products/kubernetes-security/).
 
