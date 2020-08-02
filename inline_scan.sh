@@ -32,8 +32,6 @@ SYSDIG_ANCHORE_URL="http://localhost:9040/api/scanning/v1/anchore"
 SYSDIG_ANNOTATIONS="foo=bar"
 SYSDIG_IMAGE_DIGEST="sha256:123456890abcdefg"
 SYSDIG_IMAGE_ID="123456890abcdefg"
-SYSDIG_API_TOKEN=${SYSDIG_SECURE_TOKEN}
-IMAGE_TO_SCAN=${IMAGE_TO_SCAN}
 MANIFEST_FILE="./manifest.json"
 PDF_DIRECTORY=$(echo $PWD)
 GET_CALL_STATUS=''
@@ -50,7 +48,6 @@ else
       exit 1
   fi
 fi
-
 
 display_usage() {
   cat << EOF
@@ -112,6 +109,14 @@ main() {
 
 get_and_validate_analyzer_options() {
   #Parse options
+  if [[ -z ${SYSDIG_SECURE_TOKEN} ]]; then
+    SYSDIG_API_TOKEN=${SYSDIG_SECURE_TOKEN}
+  fi
+  
+  if [[ -z ${IMAGE_TO_SCAN} ]]; then
+    IMAGE_TO_SCAN=${IMAGE_TO_SCAN}
+  fi
+  
   while getopts ':k:s:a:d:f:i:m:R:v:CPVho' option; do
       case "${option}" in
           k  ) k_flag=true; SYSDIG_API_TOKEN="${OPTARG}";;
