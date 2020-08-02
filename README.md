@@ -16,7 +16,7 @@ podman run --privileged sysdigdan/secure-inline-scan:latest analyze -s <SYSDIG_R
 
 ### SaaS
 
-#### Docker run
+#### podman
 ```
 podman run --privileged sysdigdan/secure-inline-scan:latest analyze -k <TOKEN> <FULL_IMAGE_NAME>
 ```
