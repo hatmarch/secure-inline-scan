@@ -86,10 +86,6 @@ EOF
 main() {
   trap 'cleanup' EXIT ERR SIGTERM
   trap 'interupt' SIGINT
-
-  echo 
-  whoami
-  echo
   
   if [[ "$#" -lt 1 ]] || ([[ "$1" != 'analyze' ]] && [[ "$1" != 'help' ]]); then
       display_usage >&2
