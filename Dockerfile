@@ -1,4 +1,4 @@
-FROM quay.io/buildah/stable:latest
+FROM quay.io/containers/podman:v2.0.2
 
 MAINTAINER SysdigDan <daniel.moloney@sysdig.com>
 
