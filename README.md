@@ -68,7 +68,7 @@ Edit the tekton_task.yaml for your environment.
 
 ### Deploy and run Tekton Task
 ```
-oc create -f tekton_task.yaml
+oc create -f tekton_taskrun.yaml
 ```
 
 
