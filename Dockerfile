@@ -2,6 +2,9 @@ FROM quay.io/buildah/stable:latest
 
 MAINTAINER SysdigDan <daniel.moloney@sysdig.com>
 
+ENV SYSDIG_SECURE_TOKEN=""
+ENV IMAGE_TO_SCAN=""
+
 RUN useradd sysdig
 
 RUN touch /etc/subgid /etc/subuid \
