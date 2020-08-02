@@ -134,6 +134,7 @@ get_and_validate_analyzer_options() {
   # set SYSDIG_API_TOKEN from ENV used in tekton task
   if [[ ! "${k_flag:-}" ]]; then
     SYSDIG_API_TOKEN="${SYSDIG_SECURE_TOKEN}"
+    IMAGE_TO_SCAN="${IMAGE_TO_SCAN}"
   fi
   
   SYSDIG_SCANNING_URL="${SYSDIG_BASE_SCANNING_URL}"/api/scanning/v1
