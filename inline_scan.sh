@@ -132,7 +132,7 @@ get_and_validate_analyzer_options() {
   shift "$((OPTIND - 1))"
 
   if [[ -z ${k_flag:-} ]]; then
-    ${k_flag:-}=${SYSDIG_SECURE_TOKEN}
+    ${k_flag:-}="${SYSDIG_SECURE_TOKEN}"
   fi
 
   echo
