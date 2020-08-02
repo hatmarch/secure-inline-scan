@@ -9,7 +9,7 @@ RUN touch /etc/subgid /etc/subuid \
  && echo sysdig:10000:65536 > /etc/subuid \
  && echo sysdig:10000:65536 > /etc/subgid
 
-RUN dnf install which curl bash nano wget podman -y \
+RUN dnf install which curl bash podman -y \
  && dnf -y update \
  && dnf -y clean all \
  && rm -rf /var/cache /var/log/dnf* /var/log/yum.*
