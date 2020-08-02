@@ -587,8 +587,11 @@ cleanup() {
   if [[ -z "${DOCKER_ID-""}" ]]; then
       DOCKER_ID="${DOCKER_NAME:-$(podman ps -a | grep 'inline-anchore-engine' | awk '{print $1}')}"
   fi
-
+  
   for id in ${DOCKER_ID}; do
+      echo
+      echo "DEBUG - id=${id}"
+      echo
       local -i timeout=0
       while (podman ps -a | grep "${id:0:10}") > /dev/null && [[ "${timeout}" -lt 12 ]]; do
           podman kill "${id}" &> /dev/null
@@ -597,13 +600,24 @@ cleanup() {
           ((timeout=timeout+1))
           sleep 5
       done
-
+  
       if [[ "${timeout}" -ge 12 ]]; then
           exit 1
       fi
       unset DOCKER_ID
   done
 
+  if [[ -z "${IMAGE_ID-""}" ]]; then
+      IMAGE_ID="${IMAGE_NAME:-$(podman image list | grep ${BASE_IMAGE} | awk '{print $1}')}"
+  fi
+  
+  for id in "${IMAGE_ID}"; do
+      podman image rm "${id}" &> /dev/null
+      printf '\n%s\n' "Cleaning up podman image: ${id}"
+    
+      unset IMAGE_NAMES
+  done
+  
   echo "Removing temporary folder created ${TMP_PATH}"
   rm -rf "${TMP_PATH}"
 
