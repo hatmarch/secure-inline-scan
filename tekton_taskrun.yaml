@@ -8,7 +8,7 @@ spec:
   taskSpec:
     steps:
       - name: sysdig-inline-scan
-        image: sysdigdan/secure-inline-scan:latest
+        image: sysdigdan/secure-inline-scan:dev
         securityContext:
            allowPrivilegeEscalation: true
            privileged: true
@@ -20,5 +20,5 @@ spec:
         env:
         - name: SYSDIG_SECURE_TOKEN
           value: 85e2a86e-9c13-40a3-bbe5-d161aa237a7f
-        - name: IMAGE_TO_SCAN
-          value: busybox:latest
+        - name: IMAGE
+          value: sysdiglabs/dummy-vuln-app:latest
