@@ -135,9 +135,7 @@ get_and_validate_analyzer_options() {
   if [[ ! "${k_flag:-}" ]]; then
     SYSDIG_API_TOKEN="${SYSDIG_SECURE_TOKEN}"
   fi
-  
-  
-  
+
   SYSDIG_SCANNING_URL="${SYSDIG_BASE_SCANNING_URL}"/api/scanning/v1
   SYSDIG_ANCHORE_URL="${SYSDIG_SCANNING_URL}"/anchore
   # Check for invalid options
