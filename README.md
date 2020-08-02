@@ -13,12 +13,19 @@ This script is useful for performing local analysis on container images (both fr
 ```
 podman run --privileged sysdigdan/secure-inline-scan:latest analyze -s <SYSDIG_REMOTE_URL> -o -k <TOKEN> <FULL_IMAGE_NAME>
 ```
-
+#### docker
+```
+docker run --privileged sysdigdan/secure-inline-scan:latest analyze -s <SYSDIG_REMOTE_URL> -o -k <TOKEN> <FULL_IMAGE_NAME>
+```
 ### SaaS
 
 #### podman
 ```
 podman run --privileged sysdigdan/secure-inline-scan:latest analyze -k <TOKEN> <FULL_IMAGE_NAME>
+```
+#### docker
+```
+docker run --privileged sysdigdan/secure-inline-scan:latest analyze -k <TOKEN> <FULL_IMAGE_NAME>
 ```
 
 ## OpenShift and Tekton
