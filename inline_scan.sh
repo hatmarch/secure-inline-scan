@@ -132,13 +132,17 @@ get_and_validate_analyzer_options() {
   shift "$((OPTIND - 1))"
 
   echo
-  echo "DEBUG - SYSDIG_API_TOKEN=${SYSDIG_SECURE_TOKEN}"
-  echo "DEBUG - SYSDIG_API_TOKEN=${k_flag}"
+  echo "DEBUG - SYSDIG_SECURE_TOKEN=${SYSDIG_SECURE_TOKEN}"
+  echo "DEBUG - K_FLAG=${k_flag:-}"
   echo
   
-  if [[ -z ${k_flag} ]]; then
-    ${k_flag}="${SYSDIG_SECURE_TOKEN}"
+  if [[ ! "${k_flag:-}" ]]; then
+    SYSDIG_API_TOKEN="${SYSDIG_SECURE_TOKEN}"
   fi
+
+  echo
+  echo "DEBUG - SYSDIG_API_TOKEN=${SYSDIG_SECURE_TOKEN}"
+  echo
   
   SYSDIG_SCANNING_URL="${SYSDIG_BASE_SCANNING_URL}"/api/scanning/v1
   SYSDIG_ANCHORE_URL="${SYSDIG_SCANNING_URL}"/anchore
