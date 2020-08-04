@@ -233,7 +233,8 @@ get_and_validate_images() {
   for i in "${IMAGE_NAMES[@]-}"; do
     if ([[ "${p_flag:-false}" == true ]] && [[ "${VULN_SCAN:-false}" == true ]]) || [[ "${P_flag:-false}" == true ]]; then
         echo "Pulling image -- $i"
-#        podman pull --creds "pipeline:$(cat /run/secrets/kubernetes.io/serviceaccount/token)" --tls-verify=false $i || true
+
+        # When pulling images locally, skip tls-verify by default
         podman pull --tls-verify=false $i || true
     fi
 
