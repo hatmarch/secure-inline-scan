@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -eou pipefail
+set -Eeuo pipefail
 
 ########################
 ### GLOBAL VARIABLES ###
@@ -233,7 +233,8 @@ get_and_validate_images() {
   for i in "${IMAGE_NAMES[@]-}"; do
     if ([[ "${p_flag:-false}" == true ]] && [[ "${VULN_SCAN:-false}" == true ]]) || [[ "${P_flag:-false}" == true ]]; then
         echo "Pulling image -- $i"
-        podman pull $i || true
+#        podman pull --creds "pipeline:$(cat /run/secrets/kubernetes.io/serviceaccount/token)" --tls-verify=false $i || true
+        podman pull --tls-verify=false $i || true
     fi
 
     podman inspect "$i" &> /dev/null || FAILED_IMAGES+=("$i")
