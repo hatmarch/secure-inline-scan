@@ -49,10 +49,13 @@ oc get route tekton-dashboard -n tekton-pipelines
 oc new-project sysdig-inline-scan
 oc create serviceaccount sysdig-account -n sysdig-inline-scan
 ```
+
+You may need to give the serviceaccount additional privileges to be able to interact with your local registry
+
+Create a secret that your task can reference to access sysdig, setting the 
+SYSDIG_SECURE_TOKEN to your secure token
 ```
-oc adm policy add-cluster-role-to-user customer-admin-cluster system:serviceaccount:sysdig-inline-scan:sysdig-account
-oc adm policy add-scc-to-user privileged system:serviceaccount:sysdig-inline-scan:sysdig-account
-oc adm policy add-scc-to-user hostaccess system:serviceaccount:sysdig-inline-scan:sysdig-account
+oc create secret generic sysdig-secret -n sysdig-inline-scan --from-literal secure-token="${SYSDIG_SECURE_TOKEN}"
 ```
 
 ### Configure Tekton Example Task and TaskRun

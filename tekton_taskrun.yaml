@@ -5,20 +5,50 @@ metadata:
   namespace: sysdig-inline-scan
 spec:
   serviceAccountName: sysdig-account
+  inputs:
+    params:
+      # Create a secret in the project that this pipelines runs like this:
+      # oc create secret generic sysdig-secret --from-literal secure-token="${SYSDIG_TOKEN}"
+      - name: SYSDIG_SECRET_NAME
+        value: sysdig-secret
+      - name: IMAGE_URL
+        value: docker.io/sysdiglabs/dummy-vuln-app:latest
+  podTemplate:
+    # unfortunately this appears to be necessary despite the step template
+    # otherwise Tekton changes the permission on /tekton/home to be owned by root causing
+    # images to not be able to be pulled.
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 1000
   taskSpec:
+    params:
+      - name: IMAGE_URL
+        description: the full image url 
+        default: latest
+      - name: SYSDIG_SECRET_NAME
+        description: The name of the secret that has the sysdig connection info
+    stepTemplate:
+      securityContext:
+        runAsUser: 0
+        privileged: true
     steps:
-      - name: sysdig-inline-scan
-        image: sysdigdan/secure-inline-scan:latest
-        securityContext:
-           allowPrivilegeEscalation: true
-           privileged: true
-           # the default underprivileged user to be used
-           runAsUser: 0
-        args:
-          - analyze
-          - '-P'
+      - name: inline-scan
+        # FIXME: Update this to the final image location
+        image: quay.io/mhildenb/sysdig-inline-scan:latest
+        # give some extra oomph to the scanning process
+        resources:
+          limits:
+            cpu: 1.5
+          requests:
+            cpu: 1
+        script: |
+          /scan/inline_scan.sh analyze -P -s https://secure.sysdig.com -o -k ${SYSDIG_SECURE_TOKEN} -R . ${IMAGE_TO_SCAN}
         env:
+        - name: IMAGE_TO_SCAN
+          value: $(inputs.params.IMAGE_URL)
         - name: SYSDIG_SECURE_TOKEN
-          value: 85e2a86e-9c13-40a3-bbe5-d161aa237a7f
-        - name: IMAGE
-          value: sysdiglabs/dummy-vuln-app:latest
+          valueFrom:
+            secretKeyRef:
+                name: $(params.SYSDIG_SECRET_NAME)
+                key: secure-token
+  timeout: 1h0m0s
